@@ -1,9 +1,13 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand/v2"
+)
 
 type Player struct {
 	Name string
+	Role string
 }
 
 type Game struct {
@@ -29,6 +33,27 @@ func (g *Game) StartGame() error {
 	} else if len(g.Players) >= 6 {
 		return ErrTooManyPlayers
 	}
-	// Additional game start logic would go here
+
 	return nil
+}
+
+func (g *Game) AssignRoles() {
+	type Role struct {
+		Name      string
+		SpotsLeft int
+	}
+	roles := []Role{
+		{Name: "FASCIST", SpotsLeft: 1},
+		{Name: "LIBERAL", SpotsLeft: 3},
+		{Name: "HITLER", SpotsLeft: 1},
+	}
+
+	for i := range g.Players {
+		roleIndex := rand.IntN(len(roles))
+		g.Players[i].Role = roles[roleIndex].Name
+		roles[roleIndex].SpotsLeft--
+		if roles[roleIndex].SpotsLeft == 0 {
+			roles = append(roles[:roleIndex], roles[roleIndex+1:]...)
+		}
+	}
 }

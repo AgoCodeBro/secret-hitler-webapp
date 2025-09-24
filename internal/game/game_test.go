@@ -43,3 +43,56 @@ func TestStartGame(t *testing.T) {
 		})
 	}
 }
+
+func TestAssignRoles(t *testing.T) {
+	type Tests struct {
+		name             string
+		playerNames      []string
+		expectedLiberals int
+		expectedFascists int
+	}
+
+	tests := []Tests{
+		{"5 players", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, 3, 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGame()
+			for _, name := range tt.playerNames {
+				g.AddPlayer(name)
+			}
+
+			err := g.StartGame()
+
+			if err != nil {
+				t.Errorf("unexpected error starting game: %v", err)
+			}
+
+			g.AssignRoles()
+
+			var liberalCount, fascistCount, hitlerCount int
+			for _, player := range g.Players {
+				if player.Role == "LIBERAL" {
+					liberalCount++
+				} else if player.Role == "FASCIST" {
+					fascistCount++
+				} else if player.Role == "HITLER" {
+					hitlerCount++
+				} else {
+					t.Errorf("unexpected role assigned: %s", player.Role)
+				}
+			}
+
+			if liberalCount != tt.expectedLiberals {
+				t.Errorf("expected %v liberals, got %v", tt.expectedLiberals, liberalCount)
+			}
+			if fascistCount != tt.expectedFascists {
+				t.Errorf("expected %v fascists, got %v", tt.expectedFascists, fascistCount)
+			}
+			if hitlerCount != 1 {
+				t.Errorf("expected 1 hitler, got %v", hitlerCount)
+			}
+		})
+	}
+}
