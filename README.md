@@ -1,3 +1,5 @@
+![Code success badge](https://github.com/AgoCodeBro/learn-cicd-starter/actions/workflows/ci.yml/badge.svg)
+
 # Secret Hitler Web App
 
 Web app version of the board game Secret Hitler
