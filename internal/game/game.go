@@ -1,8 +1,9 @@
 package game
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand/v2"
+	"math/big"
 )
 
 type Player struct {
@@ -37,7 +38,7 @@ func (g *Game) StartGame() error {
 	return nil
 }
 
-func (g *Game) AssignRoles() {
+func (g *Game) AssignRoles() error {
 	type Role struct {
 		Name      string
 		SpotsLeft int
@@ -52,11 +53,16 @@ func (g *Game) AssignRoles() {
 	}
 
 	for i := range g.Players {
-		roleIndex := rand.IntN(len(roles))
-		g.Players[i].Role = roles[roleIndex].Name
-		roles[roleIndex].SpotsLeft--
-		if roles[roleIndex].SpotsLeft == 0 {
-			roles = append(roles[:roleIndex], roles[roleIndex+1:]...)
+		roleIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(roles))))
+		if err != nil {
+			return err
+		}
+		roleIndexInt := int(roleIndex.Int64())
+		g.Players[i].Role = roles[roleIndexInt].Name
+		roles[roleIndexInt].SpotsLeft--
+		if roles[roleIndexInt].SpotsLeft == 0 {
+			roles = append(roles[:roleIndexInt], roles[roleIndexInt+1:]...)
 		}
 	}
+	return nil
 }

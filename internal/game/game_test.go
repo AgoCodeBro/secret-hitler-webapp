@@ -75,7 +75,10 @@ func TestAssignRoles(t *testing.T) {
 				t.Errorf("unexpected error starting game: %v", err)
 			}
 
-			g.AssignRoles()
+			err = g.AssignRoles()
+			if err != nil {
+				t.Errorf("unexpected error assigning roles: %v", err)
+			}
 
 			var liberalCount, fascistCount, hitlerCount int
 			for _, player := range g.Players {
