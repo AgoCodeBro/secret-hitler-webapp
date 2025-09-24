@@ -1,5 +1,4 @@
-![Code success badge](https://github.com/AgoCodeBro/learn-cicd-starter/actions/workflows/ci.yml/badge.svg)
-
+[![CI](https://github.com/AgoCodeBro/secret-hitler-webapp/actions/workflows/ci.yml/badge.svg)](https://github.com/AgoCodeBro/secret-hitler-webapp/actions/workflows/ci.yml)
 # Secret Hitler Web App
 
 Web app version of the board game Secret Hitler
