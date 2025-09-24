@@ -24,7 +24,8 @@ func TestStartGame(t *testing.T) {
 	tests := []Tests{
 		{"Not enough players", []string{"Alice", "Bob"}, true},
 		{"Minimum players", []string{"Alice", "Bob", "Charlie", "Ago", "Kylah"}, false},
-		{"Too many players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace"}, true},
+		{"Maximum players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "George", "Hector", "Ignacio", "James"}, false},
+		{"Too many players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hector", "Ignacio", "James", "Kylah"}, true},
 	}
 
 	for _, tt := range tests {
@@ -54,6 +55,11 @@ func TestAssignRoles(t *testing.T) {
 
 	tests := []Tests{
 		{"5 players", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, 3, 1},
+		{"6 players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank"}, 4, 1},
+		{"7 players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace"}, 4, 2},
+		{"8 players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hank"}, 5, 2},
+		{"9 players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hank", "Ivy"}, 5, 3},
+		{"10 players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hank", "Ivy", "Jack"}, 6, 3},
 	}
 
 	for _, tt := range tests {

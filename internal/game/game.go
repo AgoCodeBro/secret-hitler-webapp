@@ -30,7 +30,7 @@ var ErrTooManyPlayers = fmt.Errorf("too many players to start the game")
 func (g *Game) StartGame() error {
 	if len(g.Players) < 5 {
 		return ErrNotEnoughPlayers
-	} else if len(g.Players) >= 6 {
+	} else if len(g.Players) > 10 {
 		return ErrTooManyPlayers
 	}
 
@@ -42,9 +42,12 @@ func (g *Game) AssignRoles() {
 		Name      string
 		SpotsLeft int
 	}
+	liberalCount := (len(g.Players) / 2) + 1
+	fascistCount := len(g.Players) - liberalCount - 1
+
 	roles := []Role{
-		{Name: "FASCIST", SpotsLeft: 1},
-		{Name: "LIBERAL", SpotsLeft: 3},
+		{Name: "FASCIST", SpotsLeft: fascistCount},
+		{Name: "LIBERAL", SpotsLeft: liberalCount},
 		{Name: "HITLER", SpotsLeft: 1},
 	}
 
