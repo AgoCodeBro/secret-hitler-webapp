@@ -1,9 +1,8 @@
 package game
 
 import (
-	"crypto/rand"
 	"fmt"
-	"math/big"
+	"math/rand/v2"
 )
 
 type Player struct {
@@ -38,31 +37,23 @@ func (g *Game) StartGame() error {
 	return nil
 }
 
-func (g *Game) AssignRoles() error {
-	type Role struct {
-		Name      string
-		SpotsLeft int
-	}
+func (g *Game) AssignRoles() {
 	liberalCount := (len(g.Players) / 2) + 1
-	fascistCount := len(g.Players) - liberalCount - 1
 
-	roles := []Role{
-		{Name: "FASCIST", SpotsLeft: fascistCount},
-		{Name: "LIBERAL", SpotsLeft: liberalCount},
-		{Name: "HITLER", SpotsLeft: 1},
+	roles := make([]string, len(g.Players))
+	for i := 0; i < liberalCount; i++ {
+		roles[i] = "LIBERAL"
 	}
+	for i := liberalCount; i < len(g.Players)-1; i++ {
+		roles[i] = "FASCIST"
+	}
+	roles[len(g.Players)-1] = "HITLER"
+
+	rand.Shuffle(len(roles), func(i, j int) {
+		roles[i], roles[j] = roles[j], roles[i]
+	})
 
 	for i := range g.Players {
-		roleIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(roles))))
-		if err != nil {
-			return err
-		}
-		roleIndexInt := int(roleIndex.Int64())
-		g.Players[i].Role = roles[roleIndexInt].Name
-		roles[roleIndexInt].SpotsLeft--
-		if roles[roleIndexInt].SpotsLeft == 0 {
-			roles = append(roles[:roleIndexInt], roles[roleIndexInt+1:]...)
-		}
+		g.Players[i].Role = roles[i]
 	}
-	return nil
 }
