@@ -17,3 +17,7 @@ func NewGame() *Game {
 func (g *Game) AddPlayer(name string) {
 	g.Players = append(g.Players, Player{Name: name})
 }
+
+func (g *Game) StartGame() error {
+	return nil
+}
