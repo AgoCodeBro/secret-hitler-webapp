@@ -106,14 +106,16 @@ func TestAssignRoles(t *testing.T) {
 }
 
 func TestResetDeck(t *testing.T) {
-	deck := resetDeck()
-	if len(deck) != 17 {
-		t.Errorf("expected deck length of 17, got %d", len(deck))
+	g := NewGame()
+	g.resetDeck()
+
+	if len(g.Deck) != 17 {
+		t.Errorf("expected deck length of 17, got %d", len(g.Deck))
 	}
 	liberalCount := 0
 	fascistCount := 0
-	for _, card := range deck {
-		if card == "FACSIST" {
+	for _, card := range g.Deck {
+		if card == "FASCIST" {
 			fascistCount++
 		} else if card == "LIBERAL" {
 			liberalCount++

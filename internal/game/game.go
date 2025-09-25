@@ -16,13 +16,13 @@ type Game struct {
 	PresidentIndex int
 }
 
-func resetDeck() []string {
+func (g *Game) resetDeck() {
 	liberalCount := 6
 	fascistCount := 11
 
 	result := make([]string, (liberalCount + fascistCount))
 	for i := 0; i < fascistCount; i++ {
-		result[i] = "FACSIST"
+		result[i] = "FASCIST"
 	}
 	for i := fascistCount; i < (liberalCount + fascistCount); i++ {
 		result[i] = "LIBERAL"
@@ -32,7 +32,7 @@ func resetDeck() []string {
 		result[i], result[j] = result[j], result[i]
 	})
 
-	return result
+	g.Deck = result
 }
 
 func NewGame() *Game {
@@ -56,7 +56,7 @@ func (g *Game) StartGame() error {
 	}
 
 	g.AssignRoles()
-	g.Deck = resetDeck()
+	g.resetDeck()
 	g.PresidentIndex = 0
 
 	return nil
