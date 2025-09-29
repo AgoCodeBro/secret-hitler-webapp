@@ -100,3 +100,31 @@ func TestEnactPolicy(t *testing.T) {
 		})
 	}
 }
+
+func TestCheckWinCondition(t *testing.T) {
+	type test struct {
+		name                 string
+		policiesToBeEnacted  []string
+		expectedWinCondition string
+	}
+
+	tests := []test{
+		{"No win condition", []string{}, ""},
+		{"Liberals win", []string{"LIBERAL", "LIBERAL", "LIBERAL", "LIBERAL", "LIBERAL"}, "Liberals win"},
+		{"Fascists win", []string{"FASCIST", "FASCIST", "FASCIST", "FASCIST", "FASCIST", "FASCIST"}, "Fascists win"},
+		{"Mixed policies no win", []string{"FASCIST", "FASCIST", "LIBERAL"}, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGame()
+			for _, policy := range tt.policiesToBeEnacted {
+				g.EnactPolicy(policy)
+			}
+			winCondition := g.CheckWinCondition()
+			if winCondition != tt.expectedWinCondition {
+				t.Errorf("expected win condition: %s, got: %s", tt.expectedWinCondition, winCondition)
+			}
+		})
+	}
+}

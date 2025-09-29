@@ -43,3 +43,12 @@ func (g *Game) EnactPolicy(policy string) error {
 	}
 	return nil
 }
+
+func (g *Game) CheckWinCondition() string {
+	if g.LiberalPolicyCount >= 5 {
+		return "Liberals win"
+	} else if g.FascistPolicyCount >= 6 {
+		return "Fascists win"
+	}
+	return ""
+}

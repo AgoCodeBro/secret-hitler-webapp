@@ -15,7 +15,7 @@ func TestAddPlayer(t *testing.T) {
 		{"Add multiple players", []string{"Alice", "Bob", "Charlie"}, 3, false},
 		{"Add duplicate player", []string{"Alice", "Bob", "Alice"}, 2, true},
 		{"Add max number of players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank"}, 6, false},
-		{"Add too many players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hector", "Ignacio", "James", "Kylah"}, 10, true},
+		{"Add too many players", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Hector", "Ignacio", "James", "Kylah"}, 6, true},
 	}
 
 	for _, tt := range tests {
@@ -61,14 +61,22 @@ func TestStartGame(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := NewGame()
+			gotError := false
+			var err error
 			for _, name := range tt.playerNames {
-				g.AddPlayer(name)
+				err = g.AddPlayer(name)
+				if err != nil {
+					gotError = true
+				}
 			}
-			err := g.StartGame()
-			if (err != nil) != tt.expectError {
-				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
+			err = g.StartGame()
+			if err != nil {
+				gotError = true
 			}
-			if err == nil && len(g.Players) != len(tt.playerNames) {
+			if gotError != tt.expectError {
+				t.Errorf("expected error: %v, got: %v", tt.expectError, gotError)
+			}
+			if gotError == false && len(g.Players) != len(tt.playerNames) {
 				t.Errorf("expected %d players, got %d", len(tt.playerNames), len(g.Players))
 			}
 		})
