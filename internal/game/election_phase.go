@@ -33,6 +33,7 @@ func (g *Game) TallyVotes() bool {
 	noVotes := 0
 	for _, vote := range g.Votes {
 		if vote {
+			g.SetChancellor()
 			yesVotes++
 		} else {
 			noVotes++
@@ -48,4 +49,9 @@ func (g *Game) TallyVotes() bool {
 		g.ElectionTracker++
 		return false
 	}
+}
+
+func (g *Game) SetChancellor() {
+	g.ChancelorIndex = g.NomineeIndex
+	g.NomineeIndex = -1
 }
