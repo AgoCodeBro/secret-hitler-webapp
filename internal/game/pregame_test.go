@@ -1,8 +1,6 @@
 package game
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestAddPlayer(t *testing.T) {
 	g := NewGame()
@@ -101,71 +99,6 @@ func TestAssignRoles(t *testing.T) {
 			if hitlerCount != 1 {
 				t.Errorf("expected 1 hitler, got %v", hitlerCount)
 			}
-		})
-	}
-}
-
-func TestResetDeck(t *testing.T) {
-	g := NewGame()
-	g.resetDeck()
-
-	if len(g.Deck) != 17 {
-		t.Errorf("expected deck length of 17, got %d", len(g.Deck))
-	}
-	liberalCount := 0
-	fascistCount := 0
-	for _, card := range g.Deck {
-		if card == "FASCIST" {
-			fascistCount++
-		} else if card == "LIBERAL" {
-			liberalCount++
-		} else {
-			t.Errorf("unexpected card in deck: %s", card)
-		}
-	}
-	if liberalCount != 6 {
-		t.Errorf("expected %v liberal cards, got %v", 6, liberalCount)
-	}
-	if fascistCount != 11 {
-		t.Errorf("expected %v fascist cards, got %v", 11, fascistCount)
-	}
-}
-
-func TestNominateCanidate(t *testing.T) {
-	type test struct {
-		name           string
-		playerNames    []string
-		nominee        string
-		expectedResult int
-		expectError    bool
-	}
-
-	tests := []test{
-		{"Valid nomination", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, "Bob", 1, false},
-		{"Invalid nomination", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, "Zoe", -1, true},
-		{"Self nomination", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, "Alice", -1, true},
-		{"Valid nomination in different position", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, "Eve", 4, false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := NewGame()
-			for _, name := range tt.playerNames {
-				g.AddPlayer(name)
-			}
-
-			err := g.StartGame()
-			if err != nil {
-				t.Fatalf("unexpected error starting game: %v", err)
-			}
-
-			nomineeIndex, err := g.NominateCanidate(tt.nominee)
-			if (err != nil) != tt.expectError {
-				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
-			} else if nomineeIndex != tt.expectedResult {
-				t.Errorf("expected nominee index: %d, got: %d", tt.expectedResult, nomineeIndex)
-			}
-
 		})
 	}
 }

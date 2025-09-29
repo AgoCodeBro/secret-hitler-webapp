@@ -5,36 +5,6 @@ import (
 	"math/rand/v2"
 )
 
-type Player struct {
-	Name string
-	Role string
-}
-
-type Game struct {
-	Players        []Player
-	Deck           []string
-	PresidentIndex int
-}
-
-func (g *Game) resetDeck() {
-	liberalCount := 6
-	fascistCount := 11
-
-	result := make([]string, (liberalCount + fascistCount))
-	for i := 0; i < fascistCount; i++ {
-		result[i] = "FASCIST"
-	}
-	for i := fascistCount; i < (liberalCount + fascistCount); i++ {
-		result[i] = "LIBERAL"
-	}
-
-	rand.Shuffle(len(result), func(i, j int) {
-		result[i], result[j] = result[j], result[i]
-	})
-
-	g.Deck = result
-}
-
 func NewGame() *Game {
 	return &Game{
 		Players: []Player{},
@@ -81,13 +51,4 @@ func (g *Game) AssignRoles() {
 	for i := range g.Players {
 		g.Players[i].Role = roles[i]
 	}
-}
-
-func (g *Game) NominateCanidate(nominee string) (int, error) {
-	for i, player := range g.Players {
-		if player.Name == nominee && i != g.PresidentIndex {
-			return i, nil
-		}
-	}
-	return -1, fmt.Errorf("invalid nominee")
 }
