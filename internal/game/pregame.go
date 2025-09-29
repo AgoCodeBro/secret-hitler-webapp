@@ -11,8 +11,17 @@ func NewGame() *Game {
 	}
 }
 
-func (g *Game) AddPlayer(name string) {
+func (g *Game) AddPlayer(name string) error {
+	if len(g.Players) >= 6 {
+		return fmt.Errorf("maximum number of players reached")
+	}
+	for _, player := range g.Players {
+		if player.Name == name {
+			return fmt.Errorf("player with name %s already exists", name)
+		}
+	}
 	g.Players = append(g.Players, Player{Name: name})
+	return nil
 }
 
 var ErrNotEnoughPlayers = fmt.Errorf("not enough players to start the game")
