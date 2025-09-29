@@ -43,6 +43,7 @@ func (g *Game) TallyVotes() bool {
 		return true
 	} else {
 		g.PresidentIndex = (g.PresidentIndex + 1) % len(g.Players)
+		g.ElectionTracker++
 		return false
 	}
 }

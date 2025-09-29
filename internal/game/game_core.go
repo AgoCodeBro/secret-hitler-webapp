@@ -17,6 +17,7 @@ type Game struct {
 	Votes              map[int]bool
 	LiberalPolicyCount int
 	FascistPolicyCount int
+	ElectionTracker    int
 }
 
 func (g *Game) resetDeck() {

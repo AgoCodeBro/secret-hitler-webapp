@@ -41,6 +41,11 @@ func (g *Game) EnactPolicy(policy string) error {
 	default:
 		return fmt.Errorf("invalid policy type")
 	}
+
+	g.ElectionTracker = 0
+	if len(g.Deck) < 3 {
+		g.resetDeck()
+	}
 	return nil
 }
 
@@ -50,5 +55,6 @@ func (g *Game) CheckWinCondition() string {
 	} else if g.FascistPolicyCount >= 6 {
 		return "Fascists win"
 	}
+
 	return ""
 }
