@@ -30,11 +30,11 @@ func TestNominateCanidate(t *testing.T) {
 				t.Fatalf("unexpected error starting game: %v", err)
 			}
 
-			nomineeIndex, err := g.NominateCanidate(tt.nominee)
+			err = g.NominateCanidate(tt.nominee)
 			if (err != nil) != tt.expectError {
 				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
-			} else if nomineeIndex != tt.expectedResult {
-				t.Errorf("expected nominee index: %d, got: %d", tt.expectedResult, nomineeIndex)
+			} else if g.NomineeIndex != tt.expectedResult {
+				t.Errorf("expected nominee index: %d, got: %d", tt.expectedResult, g.NomineeIndex)
 			}
 
 		})

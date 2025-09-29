@@ -29,6 +29,7 @@ type Game struct {
 	Deck               []Policy
 	PresidentIndex     int
 	ChancelorIndex     int
+	NomineeIndex       int
 	Votes              map[int]bool
 	LiberalPolicyCount int
 	FascistPolicyCount int

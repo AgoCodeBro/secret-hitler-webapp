@@ -2,13 +2,15 @@ package game
 
 import "fmt"
 
-func (g *Game) NominateCanidate(nominee string) (int, error) {
+func (g *Game) NominateCanidate(nominee string) error {
 	for i, player := range g.Players {
 		if player.Name == nominee && i != g.PresidentIndex {
-			return i, nil
+			g.NomineeIndex = i
+			return nil
 		}
 	}
-	return -1, fmt.Errorf("invalid nominee")
+	g.NomineeIndex = -1
+	return fmt.Errorf("invalid nominee")
 }
 
 func (g *Game) CastVote(player int, vote bool) error {
