@@ -44,14 +44,14 @@ func (g *Game) StartGame() error {
 func (g *Game) AssignRoles() {
 	liberalCount := (len(g.Players) / 2) + 1
 
-	roles := make([]string, len(g.Players))
+	roles := make([]Role, len(g.Players))
 	for i := 0; i < liberalCount; i++ {
-		roles[i] = "LIBERAL"
+		roles[i] = Liberal
 	}
 	for i := liberalCount; i < len(g.Players)-1; i++ {
-		roles[i] = "FASCIST"
+		roles[i] = Fascist
 	}
-	roles[len(g.Players)-1] = "HITLER"
+	roles[len(g.Players)-1] = Hitler
 
 	rand.Shuffle(len(roles), func(i, j int) {
 		roles[i], roles[j] = roles[j], roles[i]

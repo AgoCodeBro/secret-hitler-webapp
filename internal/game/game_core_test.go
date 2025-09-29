@@ -14,9 +14,9 @@ func TestResetDeck(t *testing.T) {
 	liberalCount := 0
 	fascistCount := 0
 	for _, card := range g.Deck {
-		if card == "FASCIST" {
+		if card == FascistPolicy {
 			fascistCount++
-		} else if card == "LIBERAL" {
+		} else if card == LiberalPolicy {
 			liberalCount++
 		} else {
 			t.Errorf("unexpected card in deck: %s", card)

@@ -2,7 +2,7 @@ package game
 
 import "fmt"
 
-func (g *Game) DrawPolicies() []string {
+func (g *Game) DrawPolicies() []Policy {
 	if len(g.Deck) < 3 {
 		g.resetDeck()
 	}
@@ -12,7 +12,7 @@ func (g *Game) DrawPolicies() []string {
 	return policies
 }
 
-func (g *Game) DiscardPolicy(policies []string, policyToDiscard int) ([]string, error) {
+func (g *Game) DiscardPolicy(policies []Policy, policyToDiscard int) ([]Policy, error) {
 	if len(policies) <= 1 {
 		return nil, fmt.Errorf("not enough policies to discard")
 	}
@@ -22,7 +22,7 @@ func (g *Game) DiscardPolicy(policies []string, policyToDiscard int) ([]string, 
 	}
 
 	toBeRemovedIndex := policyToDiscard - 1
-	remainingPolicies := make([]string, 0, len(policies)-1)
+	remainingPolicies := make([]Policy, 0, len(policies)-1)
 	for i, policy := range policies {
 		if i != toBeRemovedIndex {
 			remainingPolicies = append(remainingPolicies, policy)
@@ -32,21 +32,17 @@ func (g *Game) DiscardPolicy(policies []string, policyToDiscard int) ([]string, 
 	return remainingPolicies, nil
 }
 
-func (g *Game) EnactPolicy(policy string) error {
-	switch policy {
-	case "LIBERAL":
+func (g *Game) EnactPolicy(policy Policy) {
+	if policy == LiberalPolicy {
 		g.LiberalPolicyCount++
-	case "FASCIST":
-		g.FascistPolicyCount++
-	default:
-		return fmt.Errorf("invalid policy type")
 	}
-
+	if policy == FascistPolicy {
+		g.FascistPolicyCount++
+	}
 	g.ElectionTracker = 0
 	if len(g.Deck) < 3 {
 		g.resetDeck()
 	}
-	return nil
 }
 
 func (g *Game) CheckWinCondition() string {
