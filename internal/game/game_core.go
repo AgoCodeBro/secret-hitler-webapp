@@ -54,3 +54,21 @@ func (g *Game) resetDeck() {
 
 	g.Deck = result
 }
+
+func (g *Game) checkWinCondition() string {
+	if g.LiberalPolicyCount >= 5 {
+		return "Liberals win"
+	} else if g.FascistPolicyCount >= 6 {
+		return "Fascists win"
+	} else if g.ChancelorIndex != -1 && g.Players[g.ChancelorIndex].Role == Hitler && g.FascistPolicyCount >= 3 {
+		return "Fascists win"
+	}
+
+	return ""
+}
+
+func (g *Game) StartNextRound() {
+	g.ChancelorIndex = -1
+	g.NomineeIndex = -1
+	g.PresidentIndex = (g.PresidentIndex + 1) % len(g.Players)
+}

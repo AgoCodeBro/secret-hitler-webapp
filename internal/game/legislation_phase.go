@@ -39,18 +39,15 @@ func (g *Game) EnactPolicy(policy Policy) {
 	if policy == FascistPolicy {
 		g.FascistPolicyCount++
 	}
+	g.checkWinCondition()
 	g.ElectionTracker = 0
 	if len(g.Deck) < 3 {
 		g.resetDeck()
 	}
 }
 
-func (g *Game) CheckWinCondition() string {
-	if g.LiberalPolicyCount >= 5 {
-		return "Liberals win"
-	} else if g.FascistPolicyCount >= 6 {
-		return "Fascists win"
-	}
-
-	return ""
+func (g *Game) EnactTopPolicy() {
+	policy := g.Deck[0]
+	g.Deck = g.Deck[1:]
+	g.EnactPolicy(policy)
 }

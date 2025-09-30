@@ -33,7 +33,6 @@ func (g *Game) TallyVotes() bool {
 	noVotes := 0
 	for _, vote := range g.Votes {
 		if vote {
-			g.SetChancellor()
 			yesVotes++
 		} else {
 			noVotes++
@@ -43,15 +42,19 @@ func (g *Game) TallyVotes() bool {
 	g.Votes = make(map[int]bool) // Reset votes for next round
 
 	if yesVotes > noVotes {
+		g.VoteInChancellor()
+		g.checkWinCondition()
 		return true
 	} else {
-		g.PresidentIndex = (g.PresidentIndex + 1) % len(g.Players)
 		g.ElectionTracker++
+		if g.ElectionTracker >= 3 {
+			g.EnactTopPolicy()
+		}
 		return false
 	}
 }
 
-func (g *Game) SetChancellor() {
+func (g *Game) VoteInChancellor() {
 	g.ChancelorIndex = g.NomineeIndex
 	g.NomineeIndex = -1
 }

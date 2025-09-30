@@ -37,6 +37,8 @@ func (g *Game) StartGame() error {
 	g.AssignRoles()
 	g.resetDeck()
 	g.PresidentIndex = 0
+	g.ChancelorIndex = -1
+	g.NomineeIndex = -1
 
 	return nil
 }

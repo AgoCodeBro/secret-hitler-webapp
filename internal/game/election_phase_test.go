@@ -2,7 +2,7 @@ package game
 
 import "testing"
 
-func TestNominateCanidate(t *testing.T) {
+func TestNominateCandidate(t *testing.T) {
 	type test struct {
 		name           string
 		playerNames    []string
@@ -83,16 +83,17 @@ func TestCastVote(t *testing.T) {
 
 func TestTallyVotes(t *testing.T) {
 	type test struct {
-		name        string
-		playerNames []string
-		votes       map[int]bool
-		expected    bool
+		name               string
+		playerNames        []string
+		votes              map[int]bool
+		expectedChencellor int
+		expectedResult     bool
 	}
 
 	tests := []test{
-		{"Majority yes", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, map[int]bool{0: true, 1: true, 2: false, 3: true, 4: false}, true},
-		{"Majority no", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, map[int]bool{0: false, 1: false, 2: true, 3: false, 4: true}, false},
-		{"Tie vote", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank"}, map[int]bool{0: true, 1: true, 2: false, 3: false, 4: true, 5: false}, false},
+		{"Majority yes", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, map[int]bool{0: true, 1: true, 2: false, 3: true, 4: false}, 1, true},
+		{"Majority no", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, map[int]bool{0: false, 1: false, 2: true, 3: false, 4: true}, -1, false},
+		{"Tie vote", []string{"Alice", "Bob", "Charlie", "David", "Eve", "Frank"}, map[int]bool{0: true, 1: true, 2: false, 3: false, 4: true, 5: false}, -1, false},
 	}
 
 	for _, tt := range tests {
@@ -107,6 +108,8 @@ func TestTallyVotes(t *testing.T) {
 				t.Fatalf("unexpected error starting game: %v", err)
 			}
 
+			g.NomineeIndex = 1 // Assume Bob is nominated for simplicity
+
 			for playerIndex, vote := range tt.votes {
 				err := g.CastVote(playerIndex, vote)
 				if err != nil {
@@ -115,8 +118,11 @@ func TestTallyVotes(t *testing.T) {
 			}
 
 			result := g.TallyVotes()
-			if result != tt.expected {
-				t.Errorf("expected tally result: %v, got: %v", tt.expected, result)
+			if result != tt.expectedResult {
+				t.Errorf("expected tally result: %v, got: %v", tt.expectedResult, result)
+			}
+			if g.ChancelorIndex != tt.expectedChencellor {
+				t.Errorf("expected chancellor index: %d, got: %d", tt.expectedChencellor, g.ChancelorIndex)
 			}
 		})
 	}

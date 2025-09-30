@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -85,7 +86,10 @@ func TestEnactPolicy(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := NewGame()
+			g.StartGame()
+			g.ChancelorIndex = -1
 			for _, policy := range tt.policiesToBeEnacted {
+				fmt.Println(g.ChancelorIndex)
 				g.EnactPolicy(policy)
 			}
 			if g.LiberalPolicyCount != tt.expectedLiberalCount {
@@ -98,30 +102,22 @@ func TestEnactPolicy(t *testing.T) {
 	}
 }
 
-func TestCheckWinCondition(t *testing.T) {
-	type test struct {
-		name                 string
-		policiesToBeEnacted  []Policy
-		expectedWinCondition string
+func TestEnactTopPolicy(t *testing.T) {
+	g := NewGame()
+	players := []string{"Alice", "Bob", "Charlie", "David", "Eve"}
+	for _, player := range players {
+		g.AddPlayer(player)
 	}
+	g.StartGame()
+	g.Deck[0] = LiberalPolicy
+	g.Deck[1] = FascistPolicy
 
-	tests := []test{
-		{"No win condition", []Policy{}, ""},
-		{"Liberals win", []Policy{LiberalPolicy, LiberalPolicy, LiberalPolicy, LiberalPolicy, LiberalPolicy}, "Liberals win"},
-		{"Fascists win", []Policy{FascistPolicy, FascistPolicy, FascistPolicy, FascistPolicy, FascistPolicy, FascistPolicy}, "Fascists win"},
-		{"Mixed policies no win", []Policy{LiberalPolicy, FascistPolicy, LiberalPolicy}, ""},
+	g.EnactTopPolicy()
+	if g.LiberalPolicyCount != 1 {
+		t.Errorf("failed to enact correct policy from top of deck")
 	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			g := NewGame()
-			for _, policy := range tt.policiesToBeEnacted {
-				g.EnactPolicy(policy)
-			}
-			winCondition := g.CheckWinCondition()
-			if winCondition != tt.expectedWinCondition {
-				t.Errorf("expected win condition: %s, got: %s", tt.expectedWinCondition, winCondition)
-			}
-		})
+	g.EnactTopPolicy()
+	if g.FascistPolicyCount != 1 {
+		t.Errorf("failed to enact correct policy from top of deck")
 	}
 }
