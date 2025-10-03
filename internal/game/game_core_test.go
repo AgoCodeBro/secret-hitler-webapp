@@ -73,7 +73,7 @@ func TestWinConditionFromElection(t *testing.T) {
 	}
 	for i := 0; i < 5; i++ {
 		g.FascistPolicyCount = i
-		for j, _ := range g.Players {
+		for j := range g.Players {
 			if i < 3 {
 				g.ChancelorIndex = j
 				result := g.checkWinCondition()
