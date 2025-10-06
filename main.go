@@ -8,7 +8,7 @@ import (
 	"github.com/AgoCodeBro/secret-hitler-webapp/internal/game"
 )
 
-type GameServer struct {
+type GameStates struct {
 	games map[string]*game.Game
 }
 
@@ -21,17 +21,36 @@ func main() {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	gs := GameServer{}
+	gs := GameStates{games: make(map[string]*game.Game)}
 
-	mux.HandleFunc("GET /api/healthz", http.HandlerFunc(readyHandler))
-	mux.HandleFunc("POST /api/games", http.HandlerFunc(gs.startGameHandler))
-	mux.HandleFunc("POST /api/games/{gameID}/join", http.HandlerFunc(gs.joinGameHandler))
+	mux.Handle("GET /api/healthz", http.HandlerFunc(readyHandler))
+	mux.Handle("POST /api/games", gs.gameMiddleware(http.HandlerFunc(gs.createGameHandler)))
+	mux.Handle("POST /api/games/{gameID}/join", gs.gameMiddleware(http.HandlerFunc(gs.joinGameHandler)))
+	mux.Handle("POST /api/games/{gameID}/start", gs.gameMiddleware(http.HandlerFunc(gs.startGameHandler)))
+	mux.Handle("POST /api/games/{gameID}/nominate", gs.gameMiddleware(http.HandlerFunc(gs.nominateCandidateHandler)))
+	mux.Handle("POST /api/games/{gameID}/vote", gs.gameMiddleware(http.HandlerFunc(gs.castVoteHandler)))
+	mux.Handle("GET /api/games/{gameID}/state", gs.gameMiddleware(gs.getGameStateHandler()))
 
 	log.Printf("Serving on port %v", port)
 	log.Fatal(svr.ListenAndServe())
 }
 
-func (gs *GameServer) gameExists(code string) bool {
+func (gs *GameStates) gameExists(code string) bool {
 	_, exists := gs.games[code]
 	return exists
 }
+
+func (gs *GameStates) gameMiddleware(next http.Handler) http.Handler {
+	handler := func(w http.ResponseWriter, r *http.Request) {
+		roomCode := r.PathValue("gameID")
+		if gs.gameExists(roomCode) {
+			next.ServeHTTP(w, r)
+		} else {
+			respondWithError(w, http.StatusBadRequest, "game doesnt exist", nil)
+		}
+	}
+
+	return http.HandlerFunc(handler)
+}
+
+func

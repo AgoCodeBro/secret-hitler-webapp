@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"math/rand/v2"
 )
 
@@ -19,6 +20,18 @@ const (
 	LiberalPolicy Policy = "liberal"
 )
 
+type Phase string
+
+const (
+	LobbyPhase                Phase = "lobby"
+	NominationPhase           Phase = "nomination"
+	VotingPhase               Phase = "voting"
+	PresidentLegislationPhase Phase = "president_legislation"
+	ChancelorLegislationPhase Phase = "chancelor_legistlation"
+	ExecutionPhase            Phase = "execution"
+	GameOverPhase             Phase = "game_over"
+)
+
 type Player struct {
 	Name string
 	Role Role
@@ -26,6 +39,7 @@ type Player struct {
 
 type Game struct {
 	Players            []Player
+	CurrentPhase       Phase
 	Deck               []Policy
 	PresidentIndex     int
 	ChancelorIndex     int
@@ -71,4 +85,23 @@ func (g *Game) StartNextRound() {
 	g.ChancelorIndex = -1
 	g.NomineeIndex = -1
 	g.PresidentIndex = (g.PresidentIndex + 1) % len(g.Players)
+	g.CurrentPhase = NominationPhase
+}
+
+func (g *Game) GetPlayerName(playerIndex int) (string, error) {
+	if playerIndex < 0 || playerIndex >= len(g.Players) {
+		return "", fmt.Errorf("index out of range")
+	}
+
+	return g.Players[playerIndex].Name, nil
+}
+
+func (g *Game) GetPlayerIndex(playerName string) (int, error) {
+	for i, player := range g.Players {
+		if player.Name == playerName {
+			return i, nil
+		}
+	}
+
+	return 0, fmt.Errorf("player with that name not found")
 }
