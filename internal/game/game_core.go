@@ -41,6 +41,7 @@ type Game struct {
 	Players            []Player
 	CurrentPhase       Phase
 	Deck               []Policy
+	DrawnPolicies      []Policy
 	PresidentIndex     int
 	ChancelorIndex     int
 	NomineeIndex       int
@@ -51,8 +52,11 @@ type Game struct {
 }
 
 func (g *Game) resetDeck() {
-	liberalCount := 6
-	fascistCount := 11
+	const liberalCountTotal = 6
+	const fascistCountTotal = 11
+
+	liberalCount := liberalCountTotal - g.LiberalPolicyCount
+	fascistCount := fascistCountTotal - g.FascistPolicyCount
 
 	result := make([]Policy, (liberalCount + fascistCount))
 	for i := 0; i < fascistCount; i++ {

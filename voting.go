@@ -12,7 +12,7 @@ func (gs *GameStates) nominateCandidateHandler(w http.ResponseWriter, r *http.Re
 		Nominee  string `json:"nominee"`
 	}
 
-	decoder := json.NewDecoder()
+	decoder := json.NewDecoder(r.Body)
 	params := reqParams{}
 	err := decoder.Decode(&params)
 	if err != nil {

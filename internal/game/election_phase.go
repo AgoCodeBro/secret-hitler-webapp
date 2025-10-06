@@ -6,6 +6,7 @@ func (g *Game) NominateCanidate(nominee string) error {
 	for i, player := range g.Players {
 		if player.Name == nominee && i != g.PresidentIndex {
 			g.NomineeIndex = i
+			g.CurrentPhase = VotingPhase
 			return nil
 		}
 	}
@@ -50,6 +51,7 @@ func (g *Game) TallyVotes() bool {
 		if g.ElectionTracker >= 3 {
 			g.EnactTopPolicy()
 		}
+		g.StartNextRound()
 		return false
 	}
 }

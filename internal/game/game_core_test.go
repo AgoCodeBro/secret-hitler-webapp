@@ -33,15 +33,16 @@ func TestResetDeck(t *testing.T) {
 func TestCheckWinConditionFromPolicy(t *testing.T) {
 	type test struct {
 		name                 string
-		policiesToBeEnacted  []Policy
+		liberalCount         int
+		fascistCount         int
 		expectedWinCondition string
 	}
 
 	tests := []test{
-		{"No win condition", []Policy{}, ""},
-		{"Liberals win", []Policy{LiberalPolicy, LiberalPolicy, LiberalPolicy, LiberalPolicy, LiberalPolicy}, "Liberals win"},
-		{"Fascists win", []Policy{FascistPolicy, FascistPolicy, FascistPolicy, FascistPolicy, FascistPolicy, FascistPolicy}, "Fascists win"},
-		{"Mixed policies no win", []Policy{LiberalPolicy, FascistPolicy, LiberalPolicy}, ""},
+		{"No win condition", 0, 0, ""},
+		{"Liberals win", 5, 3, "Liberals win"},
+		{"Fascists win", 2, 6, "Fascists win"},
+		{"Mixed policies no win", 2, 3, ""},
 	}
 
 	for _, tt := range tests {
@@ -53,9 +54,8 @@ func TestCheckWinConditionFromPolicy(t *testing.T) {
 			}
 			g.StartGame()
 
-			for _, policy := range tt.policiesToBeEnacted {
-				g.EnactPolicy(policy)
-			}
+			g.LiberalPolicyCount = tt.liberalCount
+			g.FascistPolicyCount = tt.fascistCount
 			winCondition := g.checkWinCondition()
 			if winCondition != tt.expectedWinCondition {
 				t.Errorf("expected win condition: %s, got: %s", tt.expectedWinCondition, winCondition)

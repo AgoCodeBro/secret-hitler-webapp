@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -26,6 +25,7 @@ func TestDrawPolicies(t *testing.T) {
 func TestDiscardPolicy(t *testing.T) {
 	type test struct {
 		name                    string
+		phase                   Phase
 		policies                []Policy
 		policyToDiscard         int
 		expectedRemainingPolicy []Policy
@@ -33,29 +33,30 @@ func TestDiscardPolicy(t *testing.T) {
 	}
 
 	tests := []test{
-		{"Valid discard", []Policy{FascistPolicy, LiberalPolicy, FascistPolicy}, 2, []Policy{FascistPolicy, FascistPolicy}, false},
-		{"Invalid discard index", []Policy{FascistPolicy, LiberalPolicy, FascistPolicy}, 4, nil, true},
-		{"Negative discard index", []Policy{FascistPolicy, LiberalPolicy, FascistPolicy}, -1, nil, true},
-		{"Discard first policy", []Policy{LiberalPolicy, FascistPolicy, FascistPolicy}, 1, []Policy{FascistPolicy, FascistPolicy}, false},
-		{"Discard last policy", []Policy{FascistPolicy, FascistPolicy, LiberalPolicy}, 3, []Policy{FascistPolicy, FascistPolicy}, false},
-		{"Empty policies", []Policy{}, 1, nil, true},
-		{"Single policy discard", []Policy{FascistPolicy}, 1, nil, true},
-		{"Two policies discard first", []Policy{LiberalPolicy, FascistPolicy}, 1, []Policy{FascistPolicy}, false},
-		{"Two policies discard second", []Policy{FascistPolicy, LiberalPolicy}, 2, []Policy{FascistPolicy}, false},
-		{"Two policies invalid index", []Policy{FascistPolicy, LiberalPolicy}, 3, nil, true},
+		{"Valid discard", PresidentLegislationPhase, []Policy{FascistPolicy, LiberalPolicy, FascistPolicy}, 2, []Policy{FascistPolicy, FascistPolicy}, false},
+		{"Invalid discard index", PresidentLegislationPhase, []Policy{FascistPolicy, LiberalPolicy, FascistPolicy}, 4, nil, true},
+		{"Negative discard index", PresidentLegislationPhase, []Policy{FascistPolicy, LiberalPolicy, FascistPolicy}, -1, nil, true},
+		{"Discard first policy", PresidentLegislationPhase, []Policy{LiberalPolicy, FascistPolicy, FascistPolicy}, 1, []Policy{FascistPolicy, FascistPolicy}, false},
+		{"Discard last policy", PresidentLegislationPhase, []Policy{FascistPolicy, FascistPolicy, LiberalPolicy}, 3, []Policy{FascistPolicy, FascistPolicy}, false},
+		{"Empty policies", PresidentLegislationPhase, []Policy{}, 1, nil, true},
+		{"Single policy discard", PresidentLegislationPhase, []Policy{FascistPolicy}, 1, nil, true},
+		{"Two policies ", PresidentLegislationPhase, []Policy{LiberalPolicy, FascistPolicy}, 1, []Policy{FascistPolicy}, true},
+		{"Invalid phase", ChancelorLegislationPhase, []Policy{LiberalPolicy, FascistPolicy, FascistPolicy}, 1, []Policy{FascistPolicy}, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := NewGame()
-			remainingPolicies, err := g.DiscardPolicy(tt.policies, tt.policyToDiscard)
+			g.CurrentPhase = tt.phase
+			g.DrawnPolicies = tt.policies
+			err := g.DiscardPolicy(tt.policyToDiscard)
 			if (err != nil) != tt.expectedError {
 				t.Errorf("expected error: %v, got: %v", tt.expectedError, err)
 			} else if !tt.expectedError {
-				if len(remainingPolicies) != len(tt.expectedRemainingPolicy) {
-					t.Errorf("expected remaining policies length: %d, got: %d", len(tt.expectedRemainingPolicy), len(remainingPolicies))
+				if len(g.DrawnPolicies) != len(tt.expectedRemainingPolicy) {
+					t.Errorf("expected remaining policies length: %d, got: %d", len(tt.expectedRemainingPolicy), len(g.DrawnPolicies))
 				} else {
-					for i, policy := range remainingPolicies {
+					for i, policy := range g.DrawnPolicies {
 						if policy != tt.expectedRemainingPolicy[i] {
 							t.Errorf("expected remaining policy %s at index %d, got %s", tt.expectedRemainingPolicy[i], i, policy)
 						}
@@ -69,34 +70,40 @@ func TestDiscardPolicy(t *testing.T) {
 func TestEnactPolicy(t *testing.T) {
 	type test struct {
 		name                 string
-		policiesToBeEnacted  []Policy
+		drawnPolicies        []Policy
+		policyToSelect       int
 		expectedLiberalCount int
 		expectedFascistCount int
+		expectError          bool
 	}
 
 	tests := []test{
-		{"Single Liberal policy", []Policy{LiberalPolicy}, 1, 0},
-		{"Single Fascist policy", []Policy{FascistPolicy}, 0, 1},
-		{"Multiple Liberal policies", []Policy{LiberalPolicy, LiberalPolicy}, 2, 0},
-		{"Multiple Fascist policies", []Policy{FascistPolicy, FascistPolicy}, 0, 2},
-		{"Mixed policies", []Policy{LiberalPolicy, FascistPolicy, LiberalPolicy}, 2, 1},
-		{"No policies", []Policy{}, 0, 0},
+		{"Liberal policy", []Policy{LiberalPolicy, FascistPolicy}, 1, 1, 0, false},
+		{"Fascist policy", []Policy{LiberalPolicy, FascistPolicy}, 2, 0, 1, false},
+		{"Wrong number of policies", []Policy{LiberalPolicy, FascistPolicy, LiberalPolicy}, 1, 0, 0, true},
+		{"Out of range selection", []Policy{LiberalPolicy, FascistPolicy}, 3, 0, 0, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := NewGame()
+			errThrown := false
 			g.StartGame()
-			g.ChancelorIndex = -1
-			for _, policy := range tt.policiesToBeEnacted {
-				fmt.Println(g.ChancelorIndex)
-				g.EnactPolicy(policy)
+			g.AddPlayer("Ago")
+			g.CurrentPhase = ChancelorLegislationPhase
+			g.DrawnPolicies = tt.drawnPolicies
+			err := g.EnactPolicy(tt.policyToSelect)
+			if err != nil {
+				errThrown = true
+			}
+			if errThrown != tt.expectError {
+				t.Errorf("expected error: %v, got error:%v", tt.expectError, errThrown)
 			}
 			if g.LiberalPolicyCount != tt.expectedLiberalCount {
-				t.Errorf("expected %v got %v", tt.expectedLiberalCount, g.LiberalPolicyCount)
+				t.Errorf("expected %v liberal policies got %v", tt.expectedLiberalCount, g.LiberalPolicyCount)
 			}
 			if g.FascistPolicyCount != tt.expectedFascistCount {
-				t.Errorf("expected %v got %v", tt.expectedFascistCount, g.FascistPolicyCount)
+				t.Errorf("expected %v liberal policies got %v", tt.expectedFascistCount, g.FascistPolicyCount)
 			}
 		})
 	}

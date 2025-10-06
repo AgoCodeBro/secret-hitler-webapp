@@ -7,7 +7,8 @@ import (
 
 func NewGame() *Game {
 	return &Game{
-		Players: []Player{},
+		Players:      []Player{},
+		CurrentPhase: LobbyPhase,
 	}
 }
 
@@ -21,6 +22,16 @@ func (g *Game) AddPlayer(name string) error {
 		}
 	}
 	g.Players = append(g.Players, Player{Name: name})
+	return nil
+}
+
+func (g *Game) RemovePlayer(name string) error {
+	index, err := g.GetPlayerIndex(name)
+	if err != nil {
+		return err
+	}
+
+	g.Players = append(g.Players[:index], g.Players[index+1:]...)
 	return nil
 }
 
@@ -39,6 +50,7 @@ func (g *Game) StartGame() error {
 	g.PresidentIndex = 0
 	g.ChancelorIndex = -1
 	g.NomineeIndex = -1
+	g.CurrentPhase = NominationPhase
 
 	return nil
 }

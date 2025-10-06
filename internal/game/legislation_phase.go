@@ -9,45 +9,60 @@ func (g *Game) DrawPolicies() []Policy {
 
 	policies := g.Deck[:3]
 	g.Deck = g.Deck[3:]
+	g.DrawnPolicies = policies
+	g.CurrentPhase = PresidentLegislationPhase
 	return policies
 }
 
-func (g *Game) DiscardPolicy(policies []Policy, policyToDiscard int) ([]Policy, error) {
-	if len(policies) <= 1 {
-		return nil, fmt.Errorf("not enough policies to discard")
+func (g *Game) DiscardPolicy(policyToDiscard int) error {
+	if g.CurrentPhase != PresidentLegislationPhase || len(g.DrawnPolicies) != 3 {
+		return fmt.Errorf("invalid game state. # of policies: %v, Phase: %v", len(g.DrawnPolicies), g.CurrentPhase)
 	}
 
-	if policyToDiscard < 1 || policyToDiscard > len(policies) {
-		return nil, fmt.Errorf("invalid policy index to discard")
+	if policyToDiscard < 1 || policyToDiscard > len(g.DrawnPolicies) {
+		return fmt.Errorf("invalid policy index to discard")
 	}
 
 	toBeRemovedIndex := policyToDiscard - 1
-	remainingPolicies := make([]Policy, 0, len(policies)-1)
-	for i, policy := range policies {
+	remainingPolicies := make([]Policy, 0, len(g.DrawnPolicies)-1)
+	for i, policy := range g.DrawnPolicies {
 		if i != toBeRemovedIndex {
 			remainingPolicies = append(remainingPolicies, policy)
 		}
 	}
 
-	return remainingPolicies, nil
+	g.DrawnPolicies = remainingPolicies
+	g.CurrentPhase = ChancelorLegislationPhase
+
+	return nil
 }
 
-func (g *Game) EnactPolicy(policy Policy) {
-	if policy == LiberalPolicy {
-		g.LiberalPolicyCount++
+func (g *Game) EnactPolicy(policyToEnact int) error {
+	if g.CurrentPhase != ChancelorLegislationPhase || len(g.DrawnPolicies) != 2 {
+		return fmt.Errorf("invalid game state. # of policies: %v, phase: %v", len(g.DrawnPolicies), g.CurrentPhase)
 	}
-	if policy == FascistPolicy {
+
+	if policyToEnact < 1 || policyToEnact > len(g.DrawnPolicies) {
+		return fmt.Errorf("invalid policy index to enact")
+	}
+
+	if g.DrawnPolicies[policyToEnact-1] == LiberalPolicy {
+		g.LiberalPolicyCount++
+	} else {
 		g.FascistPolicyCount++
 	}
-	g.checkWinCondition()
-	g.ElectionTracker = 0
-	if len(g.Deck) < 3 {
-		g.resetDeck()
-	}
+
+	g.DrawnPolicies = nil
+	g.StartNextRound()
+	return nil
 }
 
 func (g *Game) EnactTopPolicy() {
 	policy := g.Deck[0]
 	g.Deck = g.Deck[1:]
-	g.EnactPolicy(policy)
+	if policy == LiberalPolicy {
+		g.LiberalPolicyCount++
+	} else {
+		g.FascistPolicyCount++
+	}
 }

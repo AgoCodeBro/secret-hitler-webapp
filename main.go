@@ -29,7 +29,7 @@ func main() {
 	mux.Handle("POST /api/games/{gameID}/start", gs.gameMiddleware(http.HandlerFunc(gs.startGameHandler)))
 	mux.Handle("POST /api/games/{gameID}/nominate", gs.gameMiddleware(http.HandlerFunc(gs.nominateCandidateHandler)))
 	mux.Handle("POST /api/games/{gameID}/vote", gs.gameMiddleware(http.HandlerFunc(gs.castVoteHandler)))
-	mux.Handle("GET /api/games/{gameID}/state", gs.gameMiddleware(gs.getGameStateHandler()))
+	// mux.Handle("GET /api/games/{gameID}/state", gs.gameMiddleware(gs.getGameStateHandler()))
 
 	log.Printf("Serving on port %v", port)
 	log.Fatal(svr.ListenAndServe())
@@ -52,5 +52,3 @@ func (gs *GameStates) gameMiddleware(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(handler)
 }
-
-func

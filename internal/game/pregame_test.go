@@ -143,3 +143,31 @@ func TestAssignRoles(t *testing.T) {
 		})
 	}
 }
+
+func TestRemovePlayer(t *testing.T) {
+	g := NewGame()
+	err := g.AddPlayer("Ago")
+	if err != nil {
+		t.Errorf("Failed to add player: %v", err)
+	}
+
+	err = g.AddPlayer("Kylah")
+	if err != nil {
+		t.Errorf("Failed to add player: %v", err)
+	}
+
+	err = g.RemovePlayer("Kylah")
+	if err != nil {
+		t.Errorf("Failed to remove player: %v", err)
+	}
+
+	err = g.RemovePlayer("Kylah")
+	if err == nil {
+		t.Errorf("expected error")
+	}
+
+	if len(g.Players) != 1 {
+		t.Errorf("expected 1 player, got %v player(s)", len(g.Players))
+	}
+
+}
