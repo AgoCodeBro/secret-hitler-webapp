@@ -90,6 +90,10 @@ func (g *Game) StartNextRound() error {
 	}
 
 	presidentIndex = (presidentIndex + 1) % len(g.Players)
+	g.President, err = g.GetPlayerName(presidentIndex)
+	if err != nil {
+		return fmt.Errorf("failed to find president index: %v", err)
+	}
 	g.CurrentPhase = NominationPhase
 	return nil
 }
