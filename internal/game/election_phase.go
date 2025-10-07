@@ -1,16 +1,16 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 func (g *Game) NominateCanidate(nominee string) error {
-	for i, player := range g.Players {
-		if player.Name == nominee && i != g.PresidentIndex {
-			g.NomineeIndex = i
-			g.CurrentPhase = VotingPhase
-			return nil
-		}
+	if slices.Contains(g.Players, nominee) && nominee != g.President {
+		g.Nominee = nominee
+		return nil
 	}
-	g.NomineeIndex = -1
+	g.Nominee = ""
 	return fmt.Errorf("invalid nominee")
 }
 
@@ -57,6 +57,6 @@ func (g *Game) TallyVotes() bool {
 }
 
 func (g *Game) VoteInChancellor() {
-	g.ChancelorIndex = g.NomineeIndex
-	g.NomineeIndex = -1
+	g.Chancelor = g.Nominee
+	g.Nominee = ""
 }

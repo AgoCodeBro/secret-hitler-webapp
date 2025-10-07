@@ -120,14 +120,14 @@ func TestAssignRoles(t *testing.T) {
 
 			var liberalCount, fascistCount, hitlerCount int
 			for _, player := range g.Players {
-				if player.Role == Liberal {
+				if g.Roles[player] == Liberal {
 					liberalCount++
-				} else if player.Role == Fascist {
+				} else if g.Roles[player] == Fascist {
 					fascistCount++
-				} else if player.Role == Hitler {
+				} else if g.Roles[player] == Hitler {
 					hitlerCount++
 				} else {
-					t.Errorf("unexpected role assigned: %s", player.Role)
+					t.Errorf("unexpected role assigned: %s", g.Roles[player])
 				}
 			}
 

@@ -7,7 +7,8 @@ import (
 
 func NewGame() *Game {
 	return &Game{
-		Players:      []Player{},
+		Players:      make([]string, 0, 5),
+		Roles:        make(map[string]Role),
 		CurrentPhase: LobbyPhase,
 	}
 }
@@ -17,11 +18,11 @@ func (g *Game) AddPlayer(name string) error {
 		return fmt.Errorf("maximum number of players reached")
 	}
 	for _, player := range g.Players {
-		if player.Name == name {
+		if player == name {
 			return fmt.Errorf("player with name %s already exists", name)
 		}
 	}
-	g.Players = append(g.Players, Player{Name: name})
+	g.Players = append(g.Players, name)
 	return nil
 }
 
@@ -47,9 +48,7 @@ func (g *Game) StartGame() error {
 
 	g.AssignRoles()
 	g.resetDeck()
-	g.PresidentIndex = 0
-	g.ChancelorIndex = -1
-	g.NomineeIndex = -1
+	g.President = g.Players[0]
 	g.CurrentPhase = NominationPhase
 
 	return nil
@@ -72,6 +71,7 @@ func (g *Game) AssignRoles() {
 	})
 
 	for i := range g.Players {
-		g.Players[i].Role = roles[i]
+		fmt.Printf("Giving %v role %v\n", g.Players[i], roles[i])
+		g.Roles[g.Players[i]] = roles[i]
 	}
 }

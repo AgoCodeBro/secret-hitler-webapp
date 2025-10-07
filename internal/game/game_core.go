@@ -32,19 +32,15 @@ const (
 	GameOverPhase             Phase = "game_over"
 )
 
-type Player struct {
-	Name string
-	Role Role
-}
-
 type Game struct {
-	Players            []Player
+	Players            []string
+	Roles              map[string]Role
 	CurrentPhase       Phase
 	Deck               []Policy
 	DrawnPolicies      []Policy
-	PresidentIndex     int
-	ChancelorIndex     int
-	NomineeIndex       int
+	President          string
+	Chancelor          string
+	Nominee            string
 	Votes              map[int]bool
 	LiberalPolicyCount int
 	FascistPolicyCount int
@@ -78,18 +74,24 @@ func (g *Game) checkWinCondition() string {
 		return "Liberals win"
 	} else if g.FascistPolicyCount >= 6 {
 		return "Fascists win"
-	} else if g.ChancelorIndex != -1 && g.Players[g.ChancelorIndex].Role == Hitler && g.FascistPolicyCount >= 3 {
+	} else if g.Roles[g.Chancelor] == Hitler && g.FascistPolicyCount >= 3 {
 		return "Fascists win"
 	}
 
 	return ""
 }
 
-func (g *Game) StartNextRound() {
-	g.ChancelorIndex = -1
-	g.NomineeIndex = -1
-	g.PresidentIndex = (g.PresidentIndex + 1) % len(g.Players)
+func (g *Game) StartNextRound() error {
+	g.Chancelor = ""
+	g.Nominee = ""
+	presidentIndex, err := g.GetPlayerIndex(g.President)
+	if err != nil {
+		return fmt.Errorf("failed to find president index: %v", err)
+	}
+
+	presidentIndex = (presidentIndex + 1) % len(g.Players)
 	g.CurrentPhase = NominationPhase
+	return nil
 }
 
 func (g *Game) GetPlayerName(playerIndex int) (string, error) {
@@ -97,12 +99,12 @@ func (g *Game) GetPlayerName(playerIndex int) (string, error) {
 		return "", fmt.Errorf("index out of range")
 	}
 
-	return g.Players[playerIndex].Name, nil
+	return g.Players[playerIndex], nil
 }
 
 func (g *Game) GetPlayerIndex(playerName string) (int, error) {
-	for i, player := range g.Players {
-		if player.Name == playerName {
+	for i, name := range g.Players {
+		if name == playerName {
 			return i, nil
 		}
 	}

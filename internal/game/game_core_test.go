@@ -66,24 +66,23 @@ func TestCheckWinConditionFromPolicy(t *testing.T) {
 
 func TestWinConditionFromElection(t *testing.T) {
 	g := NewGame()
-	g.Players = []Player{
-		{Name: "Ago", Role: Fascist},
-		{Name: "Kylah", Role: Liberal},
-		{Name: "Jaren", Role: Hitler},
-	}
+	g.Players = []string{"Ago", "Kylah", "Jaren"}
+	g.Roles["Ago"] = Fascist
+	g.Roles["Kylah"] = Liberal
+	g.Roles["Jaren"] = Hitler
 	for i := 0; i < 5; i++ {
 		g.FascistPolicyCount = i
-		for j := range g.Players {
+		for _, name := range g.Players {
 			if i < 3 {
-				g.ChancelorIndex = j
+				g.Chancelor = name
 				result := g.checkWinCondition()
 				if result != "" {
 					t.Errorf("winner declared when there should not be one: %v", result)
 				}
 			} else {
-				g.ChancelorIndex = j
+				g.Chancelor = name
 				result := g.checkWinCondition()
-				if j == 2 {
+				if name == "Jaren" {
 					if result != "Fascists win" {
 						t.Errorf("fascist should have won: %v", result)
 					}
