@@ -45,13 +45,23 @@ func TestCastVote(t *testing.T) {
 	type test struct {
 		name        string
 		playerNames []string
-		votes       map[int]bool
+		votes       map[string]bool
 		expectError bool
 	}
 
 	tests := []test{
-		{"Valid votes", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, map[int]bool{0: true, 1: false, 2: true, 3: true, 4: false}, false},
-		{"Invalid player index", []string{"Alice", "Bob", "Charlie", "David", "Eve"}, map[int]bool{0: true, 5: false}, true},
+		{
+			"Valid votes",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			map[string]bool{"Alice": true, "Bob": false, "Charlie": true, "David": true, "Eve": false},
+			false,
+		},
+		{
+			"Invalid player index",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			map[string]bool{"Alice": true, "John": false},
+			true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -67,8 +77,8 @@ func TestCastVote(t *testing.T) {
 			}
 
 			var castErrorOccurred bool
-			for playerIndex, vote := range tt.votes {
-				err := g.CastVote(tt.playerNames[playerIndex], vote)
+			for player, vote := range tt.votes {
+				err := g.CastVote(player, vote)
 				if err != nil {
 					castErrorOccurred = true
 				}

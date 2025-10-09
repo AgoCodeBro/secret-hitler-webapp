@@ -53,6 +53,7 @@ func (g *Game) EnactPolicy(policyToEnact int) error {
 	}
 
 	g.DrawnPolicies = nil
+	g.ElectionTracker = 0
 	g.StartNextRound()
 	return nil
 }
@@ -65,4 +66,6 @@ func (g *Game) EnactTopPolicy() {
 	} else {
 		g.FascistPolicyCount++
 	}
+	g.ElectionTracker = 0
+	g.StartNextRound()
 }

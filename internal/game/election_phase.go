@@ -64,4 +64,5 @@ func (g *Game) TallyVotes() bool {
 func (g *Game) VoteInChancellor() {
 	g.Chancelor = g.Nominee
 	g.Nominee = ""
+	g.DrawPolicies()
 }
