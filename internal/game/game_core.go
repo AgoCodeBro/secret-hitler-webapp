@@ -115,3 +115,22 @@ func (g *Game) GetPlayerIndex(playerName string) (int, error) {
 
 	return 0, fmt.Errorf("player with that name not found")
 }
+
+func (g *Game) GetPlayerRole(playerName string) (Role, error) {
+	role, exist := g.Roles[playerName]
+	if !exist {
+		return "", fmt.Errorf("player with that name not found")
+	}
+
+	return role, nil
+}
+
+func (g *Game) GetHitler() (string, error) {
+	for key, value := range g.Roles {
+		if value == Hitler {
+			return key, nil
+		}
+	}
+
+	return "", fmt.Errorf("no hitler found in game")
+}

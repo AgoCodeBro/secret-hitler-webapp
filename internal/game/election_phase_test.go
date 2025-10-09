@@ -68,7 +68,7 @@ func TestCastVote(t *testing.T) {
 
 			var castErrorOccurred bool
 			for playerIndex, vote := range tt.votes {
-				err := g.CastVote(playerIndex, vote)
+				err := g.CastVote(tt.playerNames[playerIndex], vote)
 				if err != nil {
 					castErrorOccurred = true
 				}
@@ -111,7 +111,7 @@ func TestTallyVotes(t *testing.T) {
 			g.Nominee = "Bob" // Assume Bob is nominated for simplicity
 
 			for playerIndex, vote := range tt.votes {
-				err := g.CastVote(playerIndex, vote)
+				err := g.CastVote(tt.playerNames[playerIndex], vote)
 				if err != nil {
 					t.Fatalf("unexpected error casting vote: %v", err)
 				}

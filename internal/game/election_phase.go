@@ -14,17 +14,22 @@ func (g *Game) NominateCanidate(nominee string) error {
 	return fmt.Errorf("invalid nominee")
 }
 
-func (g *Game) CastVote(player int, vote bool) error {
-	if player < 0 || player >= len(g.Players) {
+func (g *Game) CastVote(player string, vote bool) error {
+	playerIndex, err := g.GetPlayerIndex(player)
+	if err != nil {
+		return fmt.Errorf("player not found in game")
+	}
+
+	if playerIndex < 0 || playerIndex >= len(g.Players) {
 		return fmt.Errorf("invalid player index")
 	}
 	if g.Votes == nil {
 		g.Votes = make(map[int]bool)
 	}
-	if _, voted := g.Votes[player]; voted {
+	if _, voted := g.Votes[playerIndex]; voted {
 		return fmt.Errorf("player has already voted")
 	}
-	g.Votes[player] = vote
+	g.Votes[playerIndex] = vote
 	return nil
 }
 
