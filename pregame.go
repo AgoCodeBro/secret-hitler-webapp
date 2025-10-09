@@ -11,35 +11,39 @@ import (
 
 func (gs *GameStates) createGameHandler(w http.ResponseWriter, r *http.Request) {
 	type reqParams struct {
-		Name string `json:"Name"`
+		Name string `json:"name"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	params := reqParams{}
 	err := decoder.Decode(&params)
 	if err != nil {
+		fmt.Println("A")
 		respondWithError(w, http.StatusBadRequest, "failed to read request body", err)
 		return
 	}
 
 	roomCode, err := gs.generateRoomCode()
 	if err != nil {
+		fmt.Println("B")
 		respondWithError(w, http.StatusInternalServerError, "falied to generate room code", err)
 		return
 	}
 
 	gs.games[roomCode] = game.NewGame()
 	gs.games[roomCode].AddPlayer((params.Name))
+	g := gs.games[roomCode]
 
 	type resultJson struct {
 		RoomCode string   `json:"room_code"`
 		Players  []string `json:"players"`
 	}
 
-	result := resultJson{RoomCode: roomCode}
-	for _, player := range gs.games[roomCode].Players {
-		result.Players = append(result.Players, player.Name)
+	result := resultJson{
+		RoomCode: roomCode,
+		Players:  g.Players,
 	}
 
+	fmt.Println(result)
 	respondWithJson(w, http.StatusCreated, result)
 }
 
@@ -78,9 +82,9 @@ func (gs *GameStates) joinGameHandler(w http.ResponseWriter, r *http.Request) {
 		Players  []string `json:"players"`
 	}
 
-	result := resultJson{RoomCode: roomCode}
-	for _, player := range gs.games[roomCode].Players {
-		result.Players = append(result.Players, player.Name)
+	result := resultJson{
+		RoomCode: roomCode,
+		Players:  gs.games[roomCode].Players,
 	}
 
 	respondWithJson(w, http.StatusOK, result)
@@ -88,9 +92,8 @@ func (gs *GameStates) joinGameHandler(w http.ResponseWriter, r *http.Request) {
 
 func (gs *GameStates) startGameHandler(w http.ResponseWriter, r *http.Request) {
 	type reqParams struct {
-		RoomCode string `json:"room_code"`
-		Name     string `json:"name"`
-		IsHost   bool   `json:"is_host"`
+		Name   string `json:"name"`
+		IsHost bool   `json:"is_host"`
 	}
 
 	roomCode := r.PathValue("gameID")
@@ -106,7 +109,7 @@ func (gs *GameStates) startGameHandler(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "failed to decode request params when joinging game", err)
 		return
 	}
-	if !params.IsHost || params.RoomCode != roomCode {
+	if !params.IsHost {
 		respondWithError(w, http.StatusForbidden, "not authorized to start game", nil)
 		return
 	}
@@ -117,7 +120,7 @@ func (gs *GameStates) startGameHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	game := gs.games[roomCode]
+	g := gs.games[roomCode]
 
 	type resultJson struct {
 		RoomCode         string   `json:"room_code"`
@@ -128,24 +131,13 @@ func (gs *GameStates) startGameHandler(w http.ResponseWriter, r *http.Request) {
 		FascistPolicies  int      `json:"fascist_policies"`
 	}
 
-	playersNames := make([]string, len(game.Players))
-	for i, player := range game.Players {
-		playersNames[i] = player.Name
-	}
-
-	presidentName, err := game.GetPlayerName(game.PresidentIndex)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "failed to get the name of the president", err)
-		return
-	}
-
 	result := resultJson{
 		RoomCode:         roomCode,
-		Players:          playersNames,
-		CurrentPresident: presidentName,
-		ElectionTracker:  game.ElectionTracker,
-		LiberalPolicies:  game.LiberalPolicyCount,
-		FascistPolicies:  game.FascistPolicyCount,
+		Players:          g.Players,
+		CurrentPresident: g.President,
+		ElectionTracker:  g.ElectionTracker,
+		LiberalPolicies:  g.LiberalPolicyCount,
+		FascistPolicies:  g.FascistPolicyCount,
 	}
 
 	respondWithJson(w, http.StatusOK, result)

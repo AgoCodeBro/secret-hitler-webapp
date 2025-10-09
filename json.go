@@ -6,16 +6,16 @@ import (
 	"net/http"
 )
 
+type errStruct struct {
+	Err string `json:"error"`
+}
+
 func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
 	if err != nil {
 		log.Println(err)
 	}
 
-	type errStruct struct {
-		err string `json:"error"`
-	}
-
-	e := errStruct{err: msg}
+	e := errStruct{Err: msg}
 
 	respondWithJson(w, code, e)
 }

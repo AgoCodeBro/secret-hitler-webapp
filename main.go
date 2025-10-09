@@ -24,12 +24,12 @@ func main() {
 	gs := GameStates{games: make(map[string]*game.Game)}
 
 	mux.Handle("GET /api/healthz", http.HandlerFunc(readyHandler))
-	mux.Handle("POST /api/games", gs.gameMiddleware(http.HandlerFunc(gs.createGameHandler)))
+	mux.Handle("POST /api/games", http.HandlerFunc(gs.createGameHandler))
 	mux.Handle("POST /api/games/{gameID}/join", gs.gameMiddleware(http.HandlerFunc(gs.joinGameHandler)))
 	mux.Handle("POST /api/games/{gameID}/start", gs.gameMiddleware(http.HandlerFunc(gs.startGameHandler)))
 	mux.Handle("POST /api/games/{gameID}/nominate", gs.gameMiddleware(http.HandlerFunc(gs.nominateCandidateHandler)))
 	mux.Handle("POST /api/games/{gameID}/vote", gs.gameMiddleware(http.HandlerFunc(gs.castVoteHandler)))
-	// mux.Handle("GET /api/games/{gameID}/state", gs.gameMiddleware(gs.getGameStateHandler()))
+	mux.Handle("GET /api/games/{gameID}/state", gs.gameMiddleware(http.HandlerFunc(gs.getGameStateHandler)))
 
 	log.Printf("Serving on port %v", port)
 	log.Fatal(svr.ListenAndServe())

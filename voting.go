@@ -7,9 +7,8 @@ import (
 
 func (gs *GameStates) nominateCandidateHandler(w http.ResponseWriter, r *http.Request) {
 	type reqParams struct {
-		RoomCode string `json:"room_code"`
-		Name     string `json:"name"`
-		Nominee  string `json:"nominee"`
+		Name    string `json:"name"`
+		Nominee string `json:"nominee"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -19,15 +18,10 @@ func (gs *GameStates) nominateCandidateHandler(w http.ResponseWriter, r *http.Re
 		respondWithError(w, http.StatusBadRequest, "failed to decode json body", err)
 		return
 	}
+	roomCode := r.PathValue("gameID")
+	game := gs.games[roomCode]
 
-	game := gs.games[params.RoomCode]
-	playerIndex, err := game.GetPlayerIndex(params.Name)
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, "failed to get index of player", err)
-		return
-	}
-
-	if playerIndex != game.PresidentIndex {
+	if params.Name != game.President {
 		respondWithError(w, http.StatusForbidden, "only the president can nominate a player", nil)
 		return
 	}
@@ -35,6 +29,7 @@ func (gs *GameStates) nominateCandidateHandler(w http.ResponseWriter, r *http.Re
 	err = game.NominateCanidate(params.Nominee)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "invalid nominee", err)
+		return
 	}
 
 	type resultJson struct {
@@ -43,7 +38,7 @@ func (gs *GameStates) nominateCandidateHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	result := resultJson{
-		RoomCode: params.RoomCode,
+		RoomCode: roomCode,
 		Nominee:  params.Nominee,
 	}
 
@@ -52,8 +47,40 @@ func (gs *GameStates) nominateCandidateHandler(w http.ResponseWriter, r *http.Re
 
 func (gs *GameStates) castVoteHandler(w http.ResponseWriter, r *http.Request) {
 	type reqParams struct {
-		RoomCode string `json:"room_code"`
-		Name     string `json:"name"`
-		Vote     bool   `json:"vote"`
+		Name string `json:"name"`
+		Vote bool   `json:"vote"`
 	}
+
+	decoder := json.NewDecoder(r.Body)
+	params := reqParams{}
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "failed to decode json body", err)
+		return
+	}
+	roomCode := r.PathValue("gameID")
+	g := gs.games[roomCode]
+
+	err = g.CastVote(params.Name, params.Vote)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "failed to cast vote", err)
+		return
+	}
+
+	type resultJson struct {
+		RoomCode  string
+		VotesCast int
+		Result    bool `json:"result,omitempty"`
+	}
+
+	result := resultJson{
+		RoomCode:  roomCode,
+		VotesCast: len(g.Votes),
+	}
+
+	if result.VotesCast == len(g.Players) {
+		result.Result = g.TallyVotes()
+	}
+
+	respondWithJson(w, http.StatusOK, result)
 }
