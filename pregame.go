@@ -52,7 +52,7 @@ func (gs *GameStates) joinGameHandler(w http.ResponseWriter, r *http.Request) {
 		Name string `json:"name"`
 	}
 
-	roomCode := r.PathValue("gameID")
+	roomCode := r.Context().Value(gameIDKey).(string)
 	if roomCode == "" {
 		respondWithError(w, http.StatusBadRequest, "no game code provided", nil)
 		return
@@ -96,7 +96,7 @@ func (gs *GameStates) startGameHandler(w http.ResponseWriter, r *http.Request) {
 		IsHost bool   `json:"is_host"`
 	}
 
-	roomCode := r.PathValue("gameID")
+	roomCode := r.Context().Value(gameIDKey).(string)
 	if roomCode == "" {
 		respondWithError(w, http.StatusBadRequest, "no game code provided", nil)
 		return

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"time"
@@ -40,9 +41,15 @@ func (gs *GameStates) gameExists(code string) bool {
 	return exists
 }
 
+type contextKey string
+
+const gameIDKey contextKey = "gameID"
+
 func (gs *GameStates) gameMiddleware(next http.Handler) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		roomCode := r.PathValue("gameID")
+		ctx := context.WithValue(r.Context(), gameIDKey, roomCode)
+		r = r.WithContext(ctx)
 		if gs.gameExists(roomCode) {
 			next.ServeHTTP(w, r)
 		} else {
