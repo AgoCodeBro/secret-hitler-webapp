@@ -31,6 +31,8 @@ func main() {
 	mux.Handle("POST /api/games/{gameID}/nominate", gs.gameMiddleware(http.HandlerFunc(gs.nominateCandidateHandler)))
 	mux.Handle("POST /api/games/{gameID}/vote", gs.gameMiddleware(http.HandlerFunc(gs.castVoteHandler)))
 	mux.Handle("GET /api/games/{gameID}/state", gs.gameMiddleware(http.HandlerFunc(gs.getGameStateHandler)))
+	mux.Handle("POST /api/games/{gameID}/discard", gs.gameMiddleware(http.HandlerFunc(gs.discardPolicyHandler)))
+	mux.Handle("POST /api/games/{gameID}/enact", gs.gameMiddleware(http.HandlerFunc(gs.enactPolicyHandler)))
 
 	log.Printf("Serving on port %v", port)
 	log.Fatal(svr.ListenAndServe())

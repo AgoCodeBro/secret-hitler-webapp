@@ -252,3 +252,236 @@ func TestNominateEndpoint(t *testing.T) {
 		})
 	}
 }
+
+func TestVoteEndpoint(t *testing.T) {
+	type Tests struct {
+		name        string
+		playerNames []string
+		votes       map[string]bool
+		expectError bool
+	}
+
+	tests := []Tests{
+		{
+			"Valid votes",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			map[string]bool{"Alice": true, "Bob": false, "Charlie": true, "David": true, "Eve": false},
+			false,
+		},
+		{
+			"Invalid player index",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			map[string]bool{"Alice": true, "John": false},
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := GameStates{games: make(map[string]*game.Game)}
+			g := game.NewGame()
+			g.Players = tt.playerNames
+			g.President = tt.playerNames[0]
+			g.Nominee = tt.playerNames[1]
+			g.StartGame()
+			gs.games[testGameID] = g
+
+			type VoteRequestData struct {
+				Name string `json:"name"`
+				Vote bool   `json:"vote"`
+			}
+
+			gotError := false
+			for name, vote := range tt.votes {
+				requestData := VoteRequestData{Name: name, Vote: vote}
+				jsonData, err := json.Marshal(requestData)
+				if err != nil {
+					t.Error(err)
+				}
+
+				req, err := http.NewRequest("POST", "/api/games/TEST/vote", bytes.NewBuffer(jsonData))
+				if err != nil {
+					t.Error(err)
+				}
+
+				rr := httptest.NewRecorder()
+
+				mux := http.NewServeMux()
+				mux.Handle("POST /api/games/{gameID}/vote", gs.gameMiddleware(http.HandlerFunc(gs.castVoteHandler)))
+				mux.ServeHTTP(rr, req)
+
+				if rr.Code != http.StatusOK {
+					gotError = true
+				}
+			}
+
+			if gotError != tt.expectError {
+				t.Errorf("expected error: %v, got: %v", tt.expectError, gotError)
+			}
+		})
+	}
+}
+
+func TestDiscardEndpoint(t *testing.T) {
+	type Tests struct {
+		name           string
+		playerNames    []string
+		hand           []game.Policy
+		discard        int
+		expectError    bool
+		expectedResult []game.Policy
+	}
+
+	tests := []Tests{
+		{
+			"Valid discard",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			[]game.Policy{game.LiberalPolicy, game.FascistPolicy, game.LiberalPolicy},
+			2,
+			false,
+			[]game.Policy{game.LiberalPolicy, game.LiberalPolicy},
+		},
+		{
+			"Invalid discard index",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			[]game.Policy{game.LiberalPolicy, game.FascistPolicy, game.LiberalPolicy},
+			5,
+			true,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := GameStates{games: make(map[string]*game.Game)}
+			g := game.NewGame()
+			g.Players = tt.playerNames
+			g.President = tt.playerNames[0]
+			g.Nominee = tt.playerNames[1]
+			g.StartGame()
+			g.DrawnPolicies = tt.hand
+			g.CurrentPhase = game.PresidentLegislationPhase
+			gs.games[testGameID] = g
+			type DiscardRequestData struct {
+				Name        string `json:"name"`
+				PolicyIndex int    `json:"policy_index"`
+			}
+			requestData := DiscardRequestData{Name: "Alice", PolicyIndex: tt.discard}
+			jsonData, err := json.Marshal(requestData)
+			if err != nil {
+				t.Error(err)
+			}
+
+			req, err := http.NewRequest("POST", "/api/games/TEST/discard", bytes.NewBuffer(jsonData))
+			if err != nil {
+				t.Error(err)
+			}
+
+			rr := httptest.NewRecorder()
+			mux := http.NewServeMux()
+			mux.Handle("POST /api/games/{gameID}/discard", gs.gameMiddleware(http.HandlerFunc(gs.discardPolicyHandler)))
+			mux.ServeHTTP(rr, req)
+
+			gotError := false
+			if rr.Code != http.StatusOK {
+				gotError = true
+			}
+
+			if gotError != tt.expectError {
+				t.Errorf("expected error: %v, got: %v", tt.expectError, gotError)
+			}
+
+			if !gotError {
+				for i, policy := range g.DrawnPolicies {
+					if policy != tt.expectedResult[i] {
+						t.Errorf("expected remaining policy %v at index %d, got %v", tt.expectedResult[i], i, policy)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestEnactEndpoint(t *testing.T) {
+	type Tests struct {
+		name                 string
+		playerNames          []string
+		hand                 []game.Policy
+		enact                int
+		expectError          bool
+		expectedLiberalCount int
+		expectedFascistCount int
+	}
+
+	tests := []Tests{
+		{
+			"Valid enact",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			[]game.Policy{game.LiberalPolicy, game.FascistPolicy},
+			1,
+			false,
+			1,
+			0,
+		},
+		{
+			"Invalid enact index",
+			[]string{"Alice", "Bob", "Charlie", "David", "Eve"},
+			[]game.Policy{game.LiberalPolicy, game.FascistPolicy},
+			5,
+			true,
+			0,
+			0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := GameStates{games: make(map[string]*game.Game)}
+			g := game.NewGame()
+			g.Players = tt.playerNames
+			g.President = tt.playerNames[0]
+			g.Chancelor = tt.playerNames[1]
+			g.StartGame()
+			g.DrawnPolicies = tt.hand
+			g.CurrentPhase = game.ChancelorLegislationPhase
+			gs.games[testGameID] = g
+			type EnactRequestData struct {
+				Name        string `json:"name"`
+				PolicyIndex int    `json:"policy_index"`
+			}
+			requestData := EnactRequestData{Name: "Bob", PolicyIndex: tt.enact}
+			jsonData, err := json.Marshal(requestData)
+			if err != nil {
+				t.Error(err)
+			}
+
+			req, err := http.NewRequest("POST", "/api/games/TEST/enact", bytes.NewBuffer(jsonData))
+			if err != nil {
+				t.Error(err)
+			}
+
+			rr := httptest.NewRecorder()
+			mux := http.NewServeMux()
+			mux.Handle("POST /api/games/{gameID}/enact", gs.gameMiddleware(http.HandlerFunc(gs.enactPolicyHandler)))
+			mux.ServeHTTP(rr, req)
+
+			gotError := false
+			if rr.Code != http.StatusOK {
+				gotError = true
+			}
+
+			if gotError != tt.expectError {
+				t.Errorf("expected error: %v, got: %v, result: %v", tt.expectError, gotError, rr.Body.String())
+			}
+
+			if !gotError {
+				if g.LiberalPolicyCount != tt.expectedLiberalCount {
+					t.Errorf("expected %d liberal policies enacted, got %d", tt.expectedLiberalCount, g.LiberalPolicyCount)
+				}
+				if g.FascistPolicyCount != tt.expectedFascistCount {
+					t.Errorf("expected %d fascist policies enacted, got %d", tt.expectedFascistCount, g.FascistPolicyCount)
+				}
+			}
+		})
+	}
+}
